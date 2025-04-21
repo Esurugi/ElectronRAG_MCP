@@ -51,14 +51,15 @@ def generate_doc_id(doc: Dict[str, Any], idx: int = None) -> str:
     # ドキュメント名をベースにする
     base_id = doc.get('name', '')
     
-    # 名前が空の場合やインデックスがある場合は、コンテンツのハッシュとインデックスを使用
-    if not base_id or idx is not None:
-        content = doc.get('content', '')
-        content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()[:8]
-        suffix = f"#{idx}" if idx is not None else ""
-        return f"{base_id}_{content_hash}{suffix}"
+    # 内容のハッシュを常に生成（一意性を保証するため）
+    content = doc.get('content', '')
+    content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()[:8]
     
-    return base_id
+    # インデックスがある場合は追加
+    suffix = f"#{idx}" if idx is not None else ""
+    
+    # 名前_コンテンツハッシュ#インデックス の形式で返す
+    return f"{base_id}_{content_hash}{suffix}"
 
 
 def rrf_fusion(result_lists: List[List[Dict[str, Any]]], k: int = 60) -> List[Dict[str, Any]]:

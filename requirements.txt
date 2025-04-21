@@ -1,0 +1,30 @@
+# ElectronRAG_MCP 要件ファイル
+# MCP SDK
+mcp==1.6.0
+
+# 検索・埋め込み・ランキングモジュール
+sentence-transformers==4.1.0
+faiss-cpu==1.10.0
+scikit-learn==1.6.1
+numpy==2.2.5
+tqdm==4.67.1
+
+# ユーティリティ
+python-dotenv==1.1.0
+pydantic==2.11.3
+requests==2.32.3
+
+# サーバー関連
+uvicorn==0.34.2
+
+# ロギングとデータ処理
+jsonpatch==1.33
+colorama==0.4.6
+
+# テスト用
+pytest==8.3.5
+pytest-asyncio==0.26.0
+
+# オプション依存関係（必要に応じてコメントを外す）
+# langchain==0.3.23
+# pinecone-client==6.0.0
