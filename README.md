@@ -1,63 +1,49 @@
-以下のように README を修正してください。仮想環境を使わず、依存パッケージをプロジェクト内の `py/` ディレクトリにインストールし、そのまま MCP サーバー／クライアントを実行できるようになります。
+# ElectronRAG_MCP 仮想環境版
 
----
+## 概要
+このリポジトリは、Electron API ドキュメントをローカルでRAG（Retrieval-Augmented Generation）システムとして検索できるMCPサーバー／クライアント実装です。  
+Python仮想環境を使用して依存関係を管理し、LLMクライアントからの自動起動をサポートします。
 
-## ElectronRAG_MCP README
+## 特徴
+- Python仮想環境（venv）による依存パッケージの分離管理
+- サーバー自動起動スクリプトによる簡単な統合
+- Claude DesktopなどのLLMクライアントからのシームレスな利用
 
-### 概要
-このリポジトリは、Electron API ドキュメントをローカルで RAG（Retrieval‑Augmented Generation）システムとして検索できる MCP サーバー／クライアント実装です。  
-依存ライブラリはすべてプロジェクト配下の `py/` フォルダにインストールし、仮想環境なしで動作します。
-
----
-
-## ディレクトリ構成例
-
+## ディレクトリ構成
 ```
 ElectronRAG_MCP/
-├── py/                     ← 依存ライブラリをインストールするフォルダ
-├── server.py               ← MCP サーバー用スクリプト
-├── test_client.py          ← 動作確認用クライアントスクリプト
-├── requirements.txt        ← 必要パッケージ一覧
-├── electron-api.json       ← Electron ドキュメント JSON
+├── .venv/                    ← 仮想環境（セットアップ後に作成されます）
+├── server.py                 ← MCPサーバー用スクリプト
+├── auto_server_client.py     ← 自動起動クライアントスクリプト
+├── test_client.py            ← 動作確認用クライアントスクリプト
+├── requirements.txt          ← 必要パッケージ一覧
+├── electron-api.json         ← Electron ドキュメントJSON
+├── claude_desktop_config_sample.json  ← Claude Desktop設定例
 └── README.md
 ```
 
----
-
 ## セットアップ手順
 
-### 1. 必要ツールのインストール
-- Python 3.11 以上
-- Node.js 18 以上
-- pip（Python に同梱）
-
-### 2. 依存パッケージを `py/` にインストール
+### 1. 仮想環境の作成と依存ライブラリのインストール
 
 ```bash
-# プロジェクトルートで実行
+# プロジェクトルートで
+python3 -m venv .venv
+
+# 仮想環境を有効化
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# macOS/Linux:
+source .venv/bin/activate
+
+# 依存パッケージをインストール
 pip install --upgrade pip setuptools
-pip install -r requirements.txt --target py
+pip install mcp[cli]==1.6.0 sentence-transformers faiss-cpu numpy tqdm python-dotenv pydantic requests uvicorn jsonpatch colorama
 ```
 
-### 3. `py/` を検索パスに追加
+これで仮想環境内に必要なSDKや検索ライブラリがインストールされます。
 
-#### macOS/Linux の場合
-
-```bash
-export PYTHONPATH="$(pwd)/py:$PYTHONPATH"
-```
-
-#### Windows PowerShell の場合
-
-```powershell
-$env:PYTHONPATH = "$PWD\py;" + $env:PYTHONPATH
-```
-
-- これにより、`import mcp` などが `py/` 配下のライブラリを参照するようになります。
-
----
-
-## Electron ドキュメント JSON の準備
+### 2. Electron ドキュメント JSON の準備
 
 公式ドキュメントを JSON 化して `electron-api.json` を用意します（すでにある場合はスキップ）。
 
@@ -67,30 +53,19 @@ npm install -g @electron/docs-parser
 electron-docs-parser --dir ./electron-repo/docs/api --moduleVersion 30.0.0
 ```
 
----
-
-## サーバーの起動方法
+### 3. クライアント動作確認
 
 ```bash
-# JSON のパスやオプションを必要に応じて調整
-python server.py \
-  --json_path electron-api.json \
-  --alpha 0.7           # ベクトル検索の重み (0.0～1.0)
-  # --no_reranker       # 再ランキングを無効化したい場合
-  # --no_rrf            # RRF 融合を無効化したい場合
+# 仮想環境が有効化されていることを確認
+python auto_server_client.py
 ```
 
-- コマンド実行後、次のように表示されれば成功です：  
-  ```
-  Loaded Electron API JSON with XXX modules
-  Generated YYY chunks in Z.ZZ seconds
-  Initialized search engine in W.WW seconds
-  Starting MCP server for Electron API documentation search...
-  ```
+正常に動作すると、以下のように表示されます：
+```
+Tools: ['search_docs', 'search_with_japanese_query']
+```
 
----
-
-## Claude Desktop などからの接続設定
+### 4. Claude Desktop などへの接続設定
 
 1. **設定ファイルを開く**  
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`  
@@ -102,66 +77,66 @@ python server.py \
    {
      "mcpServers": {
        "ElectronRAG": {
-         "command": "python",
+         "command": "C:/path/to/ElectronRAG_MCP/.venv/Scripts/python.exe",
          "args": [
-           "C:/path/to/ElectronRAG_MCP/server.py",
+           "C:/path/to/ElectronRAG_MCP/server.py", 
            "--json_path", "C:/path/to/ElectronRAG_MCP/electron-api.json",
            "--alpha", "0.7"
          ],
          "env": {
-           "PYTHONPATH": "C:/path/to/ElectronRAG_MCP/py"
+           "PYTHONPATH": "C:/path/to/ElectronRAG_MCP"
          }
        }
      }
    }
    ```
 
+   - `command`: 仮想環境のPython実行パスを絶対パスで指定
+   - `args`: サーバースクリプトと必要なオプションを指定
+   - `env.PYTHONPATH`: プロジェクトルートを指定
+
+   > ⚠️ 注: 
+   > - パスはOSに合わせて適切に指定してください。Windowsでは `\` を `/` に置き換える必要があります。
+   > - 実際のパスは環境に合わせて絶対パスで指定してください。
+
 3. **Claude Desktop を再起動**  
    「ElectronRAG」というサーバーが選択可能になります。
 
----
+### 5. 他の LLM クライアントへの応用
 
-## クライアント動作確認
-
-CLI からも動作を確認できます。
-
-```bash
-python test_client.py \
-  --mode english \
-  --keywords window create \
-  --top_k 5 \
-  --server_script server.py
-```
-
-**出力例**  
-```
-MCPサーバーに接続しています: server.py
-利用可能なツール: ['search_docs']
-検索キーワード: ['window', 'create']
-5件の結果が見つかりました:
-1. BrowserWindow (スコア: 0.8765)
-   種類: class
-   説明: Electron のウィンドウを作成するためのクラスです...
-```
-
----
+- **Claude Code CLI**（`claude mcp add-json`）を使う場合も、同様の JSON を渡すだけで登録可能です。
+  ```bash
+  claude mcp add-json < claude_desktop_config_sample.json
+  ```
 
 ## トラブルシューティング
 
-- **依存パッケージが見つからない**  
-  - `PYTHONPATH` に必ず `py/` フォルダを含めているか確認してください。  
-  - 実行中の `python` が同じバージョンかも要チェックです。
+- **venv/Scripts/python.exe が見つからない**  
+  仮想環境が正しく作成されているか確認してください。
 
-- **空の結果しか返らない**  
-  - サーバー起動時のログで「Loaded」「Generated」「Initialized」の各メッセージが出力されているか確認。  
-  - `electron-api.json` が最新か、正しいバージョン（`--moduleVersion`）で生成されているかを再確認してください。
+- **サーバーが起動しない**  
+  - 仮想環境内に必要なパッケージがすべてインストールされているか確認
+  - サーバースクリプトのパスが正しいか確認
+  - `electron-api.json` のパスが正しいか確認
 
-- **文字化けやエンコーディングエラー**  
-  - JSON 化／読み込みは UTF-8 前提です。`electron-api.json` の文字コードを UTF-8 に統一してください。
+- **検索結果が空になる**  
+  - インデックス作成が正常に完了しているか確認
+  - キーワードが適切か確認
 
+- **「Unexpected token 'G'...」エラーが表示される**
+  - MCP プロトコルは標準出力（stdout）に純粋な JSON-RPC メッセージのみを期待しますが、
+    サーバーが標準出力にログを出力すると JSON パースエラーが発生します
+  - server.py では、すべてのログが標準エラー出力（stderr）に向くように設定されていることを確認してください
 
+- **「Server disconnected」エラーが表示される**
+  - サーバーが異常終了している可能性があります。以下を確認してください：
+    1. ログファイル（server_debug.log）でエラーメッセージを確認
+    2. 仮想環境のパスが正しいか確認
+    3. Python のバージョンに互換性があるか確認（Python 3.8以上推奨）
+    4. コマンドラインから直接サーバーを実行して詳細なエラーを確認：
+       ```bash
+       .\.venv\Scripts\python.exe server.py --json_path electron-api.json
+       ```
 
 ## ライセンス
-
-MIT License 
-
+MIT License
