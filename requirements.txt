@@ -25,6 +25,11 @@ colorama==0.4.6
 pytest==8.3.5
 pytest-asyncio==0.26.0
 
+#　Touch関連
+torch==2.5.0
+torchvision==0.19.1
+torchaudio==2.5.1
+
 # オプション依存関係（必要に応じてコメントを外す）
 # langchain==0.3.23
 # pinecone-client==6.0.0
