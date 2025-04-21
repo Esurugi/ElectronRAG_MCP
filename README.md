@@ -39,15 +39,6 @@ pip install --upgrade pip setuptools
 pip install -r requirements.txt --target py
 ```
 
-- `requirements.txt` の中身例：
-  ```
-  mcp[cli]>=1.6.0
-  sentence-transformers>=2.2.0
-  faiss-cpu>=1.7.3
-  numpy>=1.24.0
-  ```
-- すべてのパッケージが `py/` 配下にダウンロードされます。
-
 ### 3. `py/` を検索パスに追加
 
 #### macOS/Linux の場合
