@@ -4,9 +4,7 @@
 このリポジトリは、Electron API ドキュメントをローカルで RAG（Retrieval-Augmented Generation）システムとして検索できる MCP サーバー／クライアント実装です。  
 
 
-## 必要な作業と不要な作業
-
-### 必要な作業
+## 必要な作業
 1. **仮想環境の作成 & 依存インストール**  
    ```bash
    python3 -m venv .venv
